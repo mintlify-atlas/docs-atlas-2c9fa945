@@ -1,0 +1,100 @@
+---
+title: "Run Komac in CI and non-interactive mode"
+description: "Configure Komac to run without prompts in CI/CD pipelines using environment variables, the --submit flag, and Docker for isolated builds."
+---
+
+Komac is designed to run fully non-interactively in CI/CD pipelines. By combining the `--submit` flag with environment variables for your token and other options, you can drive the entire manifest creation and submission workflow without any user input. This page covers the key flags and environment variables you need, Docker-based testing, and patterns for deferred submission workflows.
+
+## Flags and environment variables for automation
+
+| Flag / Variable | Description |
+|---|---|
+| `--submit` | Automatically submit the pull request without prompting for confirmation. |
+| `--dry-run` / `DRY_RUN` | Generate and validate manifests without opening a pull request. Use this to test your pipeline before going live. |
+| `GITHUB_TOKEN` | Pass your GitHub token without storing it interactively. Komac reads this environment variable automatically. |
+| `--output` / `OUTPUT_DIRECTORY` | Write the generated manifest files to a directory instead of submitting them. Combine with `komac submit` for a deferred submission workflow. |
+| `KOMAC_CREATED_WITH` | Set the name of the external tool that invoked Komac. This appears in pull request metadata and helps identify automated submissions. |
+| `KOMAC_CREATED_WITH_URL` | URL of the external tool identified by `KOMAC_CREATED_WITH`. |
+| `OPEN_PR` | Automatically open the pull request URL in a browser after submission. |
+
+## CI pipeline example
+
+The following GitHub Actions step runs a full non-interactive update. Pass `--dry-run` while setting up your workflow; remove it once you're ready to submit for real.
+
+```yaml
+- name: Submit to WinGet
+  env:
+    GITHUB_TOKEN: ${{ secrets.WINGET_TOKEN }}
+  run: |
+    komac update Publisher.Package \
+      --version "$VERSION" \
+      --urls "$INSTALLER_URL" \
+      --submit \
+      --dry-run
+```
+
+<Warning>
+  Remove `--dry-run` when you're ready to open actual pull requests. With `--dry-run` set, Komac validates and generates manifests but does not submit anything to `winget-pkgs`.
+</Warning>
+
+## Deferred submission with --output
+
+You can generate manifests to disk first and review them before submitting. This is useful when you want a human approval step or when you're building a pipeline that separates generation from submission.
+
+**Step 1 — Generate manifests to disk:**
+
+```bash
+komac update Publisher.Package \
+  --version "$VERSION" \
+  --urls "$INSTALLER_URL" \
+  --output ./manifests
+```
+
+**Step 2 — Review the files in `./manifests`, then submit:**
+
+```bash
+komac submit ./manifests --yes
+```
+
+The `submit` command reads the YAML files from the given directory, groups them by package identifier and version, and opens a pull request for each one. Pass `--yes` (or `--submit`) to skip the confirmation prompt in CI.
+
+## Identifying your automation tool
+
+If you're building a tool or action that wraps Komac, set `KOMAC_CREATED_WITH` and `KOMAC_CREATED_WITH_URL` so that pull requests include attribution metadata:
+
+```bash
+KOMAC_CREATED_WITH="my-release-bot" \
+KOMAC_CREATED_WITH_URL="https://github.com/example/my-release-bot" \
+GITHUB_TOKEN="$TOKEN" \
+komac update Publisher.Package --version "$VERSION" --urls "$URL" --submit
+```
+
+## Docker usage
+
+Docker provides a clean, isolated environment to run Komac — especially useful for testing on Linux or in environments where you don't want to install Komac globally.
+
+**Build the image from the Komac source:**
+
+```bash
+docker build ./ --tag komac_dev:latest
+```
+
+**Start an interactive shell in the container:**
+
+```bash
+docker run -it komac_dev bash
+```
+
+<Note>
+  When running the Docker container on Windows using the WSL engine, the default keyring is not supported. This means `komac token update` will not persist tokens inside the container. Pass your token via the `GITHUB_TOKEN` environment variable instead:
+
+  ```bash
+  docker run -it -e GITHUB_TOKEN="$YOUR_TOKEN" komac_dev bash
+  ```
+
+  This is a [known limitation](https://github.com/hwchen/keyring-rs/blob/47c8daf3e6178a2282ae3e8670d1ea7fa736b8cb/src/secret_service.rs#L73-L77) of the keyring crate on WSL.
+</Note>
+
+## Rate limiting
+
+When you submit multiple packages in a single pipeline run using `komac submit`, Komac applies a rate limit between submissions to avoid hitting GitHub's API limits. The default rate limit is conservative. You can pass `--fast` to `komac submit` to use the per-minute rate limit instead, but be aware this can exhaust the hourly limit if you're submitting a large number of packages at once.

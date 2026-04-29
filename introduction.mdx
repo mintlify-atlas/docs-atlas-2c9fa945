@@ -1,0 +1,75 @@
+---
+title: "Komac: Smart Manifest Automation for WinGet"
+description: "Komac creates and submits WinGet manifests with deep installer analysis. Cross-platform, no telemetry, fully automated PR workflow."
+---
+
+Komac is a fast, intelligent CLI tool written in Rust for creating and submitting [WinGet](https://github.com/microsoft/winget-pkgs) package manifests. It downloads your installers, extracts metadata automatically — reading Inno Setup scripts, MSI property tables, MSIX manifests, and more — then generates the correct YAML manifests and opens a pull request to `microsoft/winget-pkgs` on your behalf. You write no YAML and run no manual steps.
+
+## Key features
+
+<CardGroup cols={2}>
+  <Card title="Deep installer analysis" icon="magnifying-glass">
+    Extracts metadata from Inno Setup, NSIS, MSI, MSIX, Burn, and ZIP installers. Fields that other tools require you to fill in manually are populated automatically.
+  </Card>
+  <Card title="Cross-platform support" icon="globe">
+    Runs natively on Windows, Linux, and macOS — including full MSI parsing on Linux and macOS, which no other manifest tool supports.
+  </Card>
+  <Card title="GitHub integration" icon="github">
+    Fetches release notes, license information, repository topics, and publisher data directly from GitHub releases and repository metadata.
+  </Card>
+  <Card title="No telemetry" icon="shield-halved">
+    Zero data collection. Your GitHub token and package data never leave your machine.
+  </Card>
+  <Card title="Concurrent downloads" icon="bolt">
+    Downloads multiple installers in parallel (one per CPU core by default) with a real-time progress bar and ETA, keeping large multi-architecture submissions fast.
+  </Card>
+  <Card title="Fork management" icon="code-branch">
+    Automatically forks `microsoft/winget-pkgs` if needed, syncs your fork before submitting, and cleans up branches after pull requests are merged or closed.
+  </Card>
+</CardGroup>
+
+## Feature comparison
+
+Komac goes further than other WinGet manifest tools with deeper installer analysis and broader platform support.
+
+| Feature | Komac | WingetCreate | YamlCreate |
+|---|:---:|:---:|:---:|
+| Parameters | ✅ | ✅ | ❌ |
+| Download progress bar & ETA | ✅ | ❌ | ❌ |
+| Fully cross-platform | ✅ | ❌ | Limited |
+| Works without Git | ✅ | ✅ | ❌ |
+| Full Inno Setup value retrieval | ✅ | ❌ | ❌ |
+| Full MSI value retrieval | ✅ | Partial | Partial |
+| Linux & macOS MSI support | ✅ | ❌ | ❌ |
+| Full MSIX value retrieval | ✅ | Partial | Partial |
+| Get information from GitHub | ✅ | ✅ | ❌ |
+| Formatted GitHub release notes retrieval | ✅ | ❌ | ❌ |
+| Release date identification | ✅ | ❌ | ❌ |
+| No telemetry | ✅ | ⭕ | ✅ |
+| Fully standalone (without winget-pkgs clone) | ✅ | ✅ | ❌ |
+| Inno Setup detection | ✅ | ✅ | ✅ |
+| Nullsoft detection | ✅ | ✅ | ✅ |
+| Burn installer detection | ✅ | ✅ | Opt-in |
+
+<Note>
+  WingetCreate has telemetry enabled by default. Run `wingetcreate settings` to disable it manually.
+</Note>
+
+## How it works
+
+Komac follows a four-step workflow every time you run `komac new` or `komac update`:
+
+<Steps>
+  <Step title="Download installers">
+    Komac fetches each installer URL concurrently, showing a live progress bar with download speed and ETA. Files are stored in a temporary directory and removed automatically after analysis.
+  </Step>
+  <Step title="Analyze installer contents">
+    Each downloaded file is inspected deeply. For Inno Setup binaries, Komac reads the embedded script. For MSI files, it queries the property table. For MSIX packages, it parses the app manifest. Architecture, version, publisher, silent switches, and more are extracted without any input from you.
+  </Step>
+  <Step title="Generate manifests">
+    Komac produces the three required WinGet manifest files — installer manifest, default locale manifest, and version manifest — pre-populated with the extracted metadata. For packages already in winget-pkgs, it fetches the existing manifests and merges the new version on top.
+  </Step>
+  <Step title="Submit pull request">
+    Komac forks `microsoft/winget-pkgs` if you don't already have one, pushes the manifest files to a new branch, and opens a pull request. If a PR for the same package and version already exists, Komac warns you before proceeding.
+  </Step>
+</Steps>

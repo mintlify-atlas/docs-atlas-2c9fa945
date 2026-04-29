@@ -1,0 +1,81 @@
+---
+title: "Environment variables supported by Komac"
+description: "Komac reads several environment variables for tokens, output paths, and automation flags. Use these in CI/CD pipelines to run Komac non-interactively."
+---
+
+Komac reads a set of environment variables that let you control its behaviour without interactive prompts. This makes it straightforward to integrate Komac into CI/CD pipelines, GitHub Actions workflows, or any other automated environment.
+
+## Variables
+
+<ParamField path="GITHUB_TOKEN" type="string">
+  GitHub personal access token (classic) with the `public_repo` scope. When set, Komac uses this token instead of the one stored in the OS keychain. Required in CI environments where there is no keychain to read from.
+</ParamField>
+
+<ParamField path="OUTPUT_DIRECTORY" type="string">
+  Path to a directory where Komac should write the generated manifest files instead of submitting a pull request. Useful for inspecting manifests or committing them manually.
+</ParamField>
+
+<ParamField path="DRY_RUN" type="string">
+  Set to any non-empty value to run Komac without prompting for confirmation or submitting a pull request. The manifests are generated in memory but nothing is written or submitted. Useful for validating inputs in a pipeline.
+</ParamField>
+
+<ParamField path="OPEN_PR" type="string">
+  Set to any non-empty value to automatically open the submitted pull request URL in the default browser once it has been created.
+</ParamField>
+
+<ParamField path="KOMAC_CREATED_WITH" type="string">
+  Name of the external tool or automation that invoked Komac. When set, this value is recorded in the pull request metadata so that maintainers can identify how the PR was created.
+</ParamField>
+
+<ParamField path="KOMAC_CREATED_WITH_URL" type="string">
+  URL of the external tool or automation that invoked Komac. Used alongside `KOMAC_CREATED_WITH` in pull request metadata.
+</ParamField>
+
+<ParamField path="CI" type="string">
+  Standard CI environment variable set automatically by most CI systems (GitHub Actions, GitLab CI, CircleCI, etc.). When set, `komac cleanup` deletes all eligible branches without showing an interactive selection prompt.
+</ParamField>
+
+<ParamField path="SKIP_PR_CHECK" type="string">
+  Set to any non-empty value to skip the check for an existing open pull request for the same package and version before proceeding. Useful when you know a duplicate PR check is unnecessary.
+</ParamField>
+
+## CI pipeline examples
+
+### GitHub Actions — submit a manifest
+
+```yaml
+- name: Submit manifest to winget-pkgs
+  env:
+    GITHUB_TOKEN: ${{ secrets.WINGET_TOKEN }}
+  run: |
+    komac update Publisher.Package \
+      --version ${{ github.event.release.tag_name }} \
+      --urls https://example.com/installer.exe \
+      --submit
+```
+
+### Write manifests to disk without submitting
+
+```bash
+OUTPUT_DIRECTORY=./manifests komac update Publisher.Package \
+  --version 1.2.3 \
+  --urls https://example.com/installer.exe
+```
+
+### Dry run for validation
+
+```bash
+DRY_RUN=1 GITHUB_TOKEN=ghp_xxxx komac update Publisher.Package \
+  --version 1.2.3 \
+  --urls https://example.com/installer.exe
+```
+
+### Automated cleanup in CI
+
+```bash
+CI=true komac cleanup
+```
+
+<Tip>
+  In CI environments Komac requires `GITHUB_TOKEN` to be set because there is no OS keychain available. If no token is found, Komac exits with an error rather than prompting interactively.
+</Tip>

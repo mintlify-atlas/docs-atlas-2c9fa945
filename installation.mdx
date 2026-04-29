@@ -1,0 +1,140 @@
+---
+title: "Install Komac on Windows, Linux, and macOS"
+description: "Install Komac using WinGet, Scoop, Homebrew, Cargo, or cargo-binstall. Portable binaries and .deb/.rpm packages available for all platforms."
+---
+
+Komac is a single self-contained binary with no runtime dependencies. You can install it through your preferred package manager or download a prebuilt binary directly from the [releases page](https://github.com/russellbanks/Komac/releases).
+
+## Install by platform
+
+<Tabs>
+  <Tab title="Windows">
+    ### WinGet
+
+    The easiest way to install Komac on Windows is through WinGet:
+
+    ```bash
+    winget install komac
+    ```
+
+    ### Scoop
+
+    If you use [Scoop](https://scoop.sh), install Komac from the main bucket:
+
+    ```bash
+    scoop install komac
+    ```
+
+    ### Portable binary or installer
+
+    Standalone `.exe` files and a Windows installer are available on the [releases page](https://github.com/russellbanks/Komac/releases). Download the asset that matches your architecture, place the executable somewhere on your `PATH`, and you're ready to go.
+  </Tab>
+  <Tab title="Linux">
+    ### Debian and Ubuntu (.deb)
+
+    Download the `.deb` package for your architecture from the [releases page](https://github.com/russellbanks/Komac/releases) and install it with `dpkg`:
+
+    ```bash
+    sudo dpkg -i komac_<version>_amd64.deb
+    ```
+
+    ### Red Hat and Fedora (.rpm)
+
+    Download the `.rpm` package from the [releases page](https://github.com/russellbanks/Komac/releases) and install it with your package manager:
+
+    ```bash
+    sudo rpm -i komac-<version>.x86_64.rpm
+    ```
+
+    ### Cargo
+
+    If you have Rust installed, you can build and install Komac from source:
+
+    ```bash
+    cargo install --locked komac
+    ```
+
+    ### cargo-binstall
+
+    [cargo-binstall](https://github.com/cargo-bins/cargo-binstall) downloads the prebuilt binary instead of compiling from source:
+
+    ```bash
+    cargo binstall komac
+    ```
+
+    ### Portable binary
+
+    A prebuilt binary is available for Linux on the [releases page](https://github.com/russellbanks/Komac/releases). Download it, make it executable, and place it on your `PATH`:
+
+    ```bash
+    chmod +x komac
+    mv komac /usr/local/bin/
+    ```
+  </Tab>
+  <Tab title="macOS">
+    ### Homebrew
+
+    Install Komac using [Homebrew](https://brew.sh):
+
+    ```bash
+    brew install komac
+    ```
+
+    ### Cargo
+
+    If you have Rust installed, build and install from source:
+
+    ```bash
+    cargo install --locked komac
+    ```
+
+    ### cargo-binstall
+
+    Use [cargo-binstall](https://github.com/cargo-bins/cargo-binstall) to download the prebuilt binary:
+
+    ```bash
+    cargo binstall komac
+    ```
+
+    ### Portable binary
+
+    A prebuilt binary for macOS is available on the [releases page](https://github.com/russellbanks/Komac/releases). Download it, make it executable, and place it on your `PATH`:
+
+    ```bash
+    chmod +x komac
+    mv komac /usr/local/bin/
+    ```
+  </Tab>
+</Tabs>
+
+## All platforms
+
+If you have Rust or cargo-binstall available, these commands work on Windows, Linux, and macOS:
+
+<CodeGroup>
+
+```bash cargo
+cargo install --locked komac
+```
+
+```bash cargo-binstall
+cargo binstall komac
+```
+
+</CodeGroup>
+
+The minimum supported Rust version (MSRV) is **1.95**.
+
+## Nightly builds
+
+<Note>
+  Nightly releases are built every week and published to the [nightly tag](https://github.com/russellbanks/Komac/releases/tag/nightly) on GitHub. They include the latest unreleased features and fixes but are not recommended for production use.
+</Note>
+
+## Verify the installation
+
+After installing, confirm Komac is on your `PATH` by checking the version:
+
+```bash
+komac --version
+```

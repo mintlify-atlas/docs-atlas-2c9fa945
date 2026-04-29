@@ -1,0 +1,96 @@
+---
+title: "Configure your GitHub token for Komac"
+description: "Komac needs a classic GitHub token with the public_repo scope to submit pull requests to winget-pkgs. Learn how to create, add, update, and remove tokens."
+---
+
+Komac uses the GitHub API to fork `microsoft/winget-pkgs`, commit your manifest files, and open a pull request — all on your behalf. To do this it needs a GitHub personal access token (classic) with the `public_repo` scope. Without a valid token Komac cannot submit anything to winget-pkgs.
+
+## Create a classic GitHub token
+
+<Steps>
+  <Step title="Open the classic token settings page">
+    Go to [github.com/settings/tokens](https://github.com/settings/tokens) and click **Generate new token**, then select **Generate new token (classic)**.
+  </Step>
+  <Step title="Name the token">
+    Give the token a descriptive name so you can identify it later, for example `Komac WinGet`.
+  </Step>
+  <Step title="Select the public_repo scope">
+    Under the **repo** section, check the `public_repo` scope. This is the only scope Komac requires.
+  </Step>
+  <Step title="Generate and copy the token">
+    Scroll to the bottom and click **Generate token**. Copy the token immediately — GitHub only shows it once.
+  </Step>
+</Steps>
+
+<Note>
+  Fine-grained tokens cannot create pull requests on `microsoft/winget-pkgs`. This is a GitHub limitation with fine-grained tokens on repositories you do not own. See [issue #310](https://github.com/russellbanks/Komac/issues/310) for details. Use a classic token until this is resolved.
+</Note>
+
+## Store your token
+
+Run the following command and paste your token when prompted. Komac validates the token against the GitHub API before saving it.
+
+```bash
+komac token update
+```
+
+The command also accepts `new` and `add` as aliases:
+
+```bash
+komac token add
+```
+
+Komac stores the token in your operating system's secure credential storage:
+
+- **Windows** — Windows Credential Manager
+- **macOS** — macOS Keychain
+- **Linux** — D-Bus Secret Service (e.g. GNOME Keyring, KWallet)
+
+## Pass the token directly
+
+You can supply the token inline with the `--token` flag instead of being prompted:
+
+```bash
+komac token update --token=<your-token>
+```
+
+If you have the [GitHub CLI](https://cli.github.com/) installed you can pipe your authenticated token directly:
+
+```bash
+komac token update --token=$(gh auth token)
+```
+
+## Use an environment variable
+
+Set `GITHUB_TOKEN` in your environment and Komac will use it automatically, overriding any token stored in the keychain. This is the recommended approach for CI/CD pipelines.
+
+```bash
+export GITHUB_TOKEN=ghp_xxxxxxxxxxxxxxxxxxxx
+komac update Publisher.Package --version 1.2.3 --urls https://example.com/installer.exe --submit
+```
+
+See [Environment variables](/configuration/environment-variables) for the full list of variables Komac reads.
+
+## Remove your token
+
+To delete the stored token from your system's credential storage, run:
+
+```bash
+komac token remove
+```
+
+You will be asked to confirm before the token is deleted. To skip the confirmation prompt, pass `--yes` (or `-y`):
+
+```bash
+komac token remove --yes
+```
+
+The command also accepts `delete` as an alias:
+
+```bash
+komac token delete
+```
+
+<Warning>
+  Keep your GitHub token private. Anyone who obtains it can open pull requests and interact with public repositories as you. If a token is ever exposed, revoke it immediately at [github.com/settings/tokens](https://github.com/settings/tokens) and generate a new one.
+</Warning>

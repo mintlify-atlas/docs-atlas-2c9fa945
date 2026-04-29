@@ -1,0 +1,78 @@
+---
+title: "Automate WinGet releases with GitHub Actions"
+description: "Use GitHub Actions to automatically submit WinGet manifests when you publish a release. Configure WinGet Releaser or run Komac directly in your workflow."
+---
+
+Every time you publish a GitHub release, you can have WinGet manifests submitted automatically — no manual steps required. The simplest way to do this is with [WinGet Releaser](https://github.com/vedantmgoyal9/winget-releaser), a GitHub Action that invokes Komac behind the scenes, passing your release's installer URLs directly to the submission workflow.
+
+## WinGet Releaser (recommended)
+
+WinGet Releaser is the fastest way to get automated WinGet submissions. Add it to your repository's workflow file and it will detect your release assets, run Komac against them, and open a pull request to `microsoft/winget-pkgs` whenever you publish a release.
+
+```yaml
+name: Publish to WinGet
+on:
+  release:
+    types: [ released ]
+jobs:
+  publish:
+    runs-on: windows-latest
+    steps:
+      - uses: vedantmgoyal9/winget-releaser@main
+        with:
+          identifier: Package.Identifier
+          token: ${{ secrets.WINGET_TOKEN }}
+          # installers-regex: '\.exe$' # Only .exe files
+```
+
+Replace `Package.Identifier` with your package's WinGet identifier (for example, `Publisher.AppName`). The `token` input must be a GitHub classic token with the `public_repo` scope — store it as a repository secret named `WINGET_TOKEN`.
+
+<Tip>
+  Use the `installers-regex` input to filter which release assets are submitted. For example, `'\.exe$'` restricts submissions to `.exe` files only, which is useful when your release includes multiple asset types (`.zip`, `.msi`, `.exe`) but only some are the primary installers.
+</Tip>
+
+## Setting up the WINGET_TOKEN secret
+
+<Steps>
+  <Step title="Generate a GitHub classic token">
+    Go to **Settings → Developer settings → Personal access tokens → Tokens (classic)** and generate a new token. Select the `public_repo` scope. Copy the token value — you won't be able to see it again.
+  </Step>
+  <Step title="Open your repository secrets">
+    In your repository, go to **Settings → Secrets and variables → Actions**.
+  </Step>
+  <Step title="Create the secret">
+    Click **New repository secret**. Set the name to `WINGET_TOKEN` and paste the token value. Click **Add secret**.
+  </Step>
+</Steps>
+
+<Note>
+  Komac requires a classic GitHub token. Fine-grained tokens can create commits but currently cannot open pull requests to `winget-pkgs`. See [issue #310](https://github.com/russellbanks/Komac/issues/310) for updates.
+</Note>
+
+## Alternative actions
+
+If WinGet Releaser doesn't fit your workflow, these community actions give you more control over how Komac runs.
+
+<CardGroup cols={2}>
+  <Card
+    title="run-komac"
+    icon="circle-play"
+    href="https://github.com/michidk/run-komac"
+  >
+    Run Komac manually with custom flags. Useful when you need fine-grained control over the submission command.
+  </Card>
+  <Card
+    title="winget-updater"
+    icon="arrows-rotate"
+    href="https://github.com/michidk/winget-updater"
+  >
+    Automate manifest submissions for packages hosted in external repositories that you don't own.
+  </Card>
+  <Card
+    title="install-komac"
+    icon="download"
+    href="https://github.com/UnownPlain/install-komac"
+  >
+    Install Komac as a step in your workflow, then call it directly with any flags your pipeline requires.
+  </Card>
+</CardGroup>

@@ -1,0 +1,156 @@
+---
+title: "komac update — Add a new version to an existing package"
+description: "Use komac update to add a new version of an existing WinGet package. Downloads and analyzes installer URLs, matches them to previous installers, and opens a PR."
+---
+
+`komac update` adds a new version to a package that already exists in `microsoft/winget-pkgs`. Komac fetches the current manifests for the latest version, downloads your new installer URLs, and intelligently matches each new installer to its previous counterpart by architecture and installer type. The resulting manifests inherit all unchanged metadata from the previous version, so you only need to supply what has changed.
+
+## Usage
+
+```bash
+komac update <PACKAGE_IDENTIFIER> --version <VERSION> --urls <URL>... [OPTIONS]
+```
+
+## Parameters
+
+<ParamField path="package-identifier" type="string" required>
+  The package's unique identifier (e.g. `Publisher.PackageName`). This is a positional argument — no flag name is needed.
+</ParamField>
+
+<ParamField path="--version" type="string" required>
+  Short: `-v`. The new package version string (e.g. `2.1.0`).
+</ParamField>
+
+<ParamField path="--urls" type="string[]" required>
+  Short: `-u`. One or more installer URLs, separated by spaces. At least one URL is required.
+</ParamField>
+
+<ParamField path="--concurrent-downloads" type="number">
+  The number of installer files to download simultaneously. Defaults to the number of logical CPU cores on your machine.
+</ParamField>
+
+<ParamField path="--resolves" type="number[]">
+  One or more GitHub issue numbers that this pull request resolves.
+</ParamField>
+
+<ParamField path="--submit" type="boolean">
+  Short: `-s`. Automatically open a pull request without a confirmation prompt.
+</ParamField>
+
+<ParamField path="--release-notes-url" type="string">
+  URL to the release notes for this specific version. Overrides any release notes URL retrieved from GitHub.
+</ParamField>
+
+<ParamField path="--created-with" type="string">
+  Name of the external tool that invoked Komac. Also readable from the `KOMAC_CREATED_WITH` environment variable.
+</ParamField>
+
+<ParamField path="--created-with-url" type="string">
+  URL to the external tool that invoked Komac. Also readable from the `KOMAC_CREATED_WITH_URL` environment variable.
+</ParamField>
+
+<ParamField path="--output" type="string">
+  Short: `-o`. Directory path to write the generated manifest files to. Also readable from the `OUTPUT_DIRECTORY` environment variable.
+</ParamField>
+
+<ParamField path="--open-pr" type="boolean">
+  Open the pull request URL in your browser automatically after it is created. Also readable from the `OPEN_PR` environment variable.
+</ParamField>
+
+<ParamField path="--dry-run" type="boolean">
+  Generate and display the manifests without submitting a pull request. Also readable from the `DRY_RUN` environment variable.
+</ParamField>
+
+<ParamField path="--replace" type="string">
+  The version this new version replaces. When provided without a value (i.e. `--replace` only), it defaults to `latest`, replacing the current latest version. The replacement version must already exist in `winget-pkgs`. The PR will delete the replaced version's manifests as part of the same commit.
+</ParamField>
+
+<ParamField path="--skip-pr-check" type="boolean">
+  Skip the check for an existing open pull request for the same package and version. Also readable from the `SKIP_PR_CHECK` environment variable.
+</ParamField>
+
+<ParamField path="--token" type="string">
+  Short: `-t`. A GitHub classic personal access token with the `public_repo` scope. Also readable from the `GITHUB_TOKEN` environment variable.
+</ParamField>
+
+## Environment variables
+
+| Variable                 | Equivalent flag        |
+|--------------------------|------------------------|
+| `GITHUB_TOKEN`           | `--token`              |
+| `OUTPUT_DIRECTORY`       | `--output`             |
+| `DRY_RUN`                | `--dry-run`            |
+| `OPEN_PR`                | `--open-pr`            |
+| `SKIP_PR_CHECK`          | `--skip-pr-check`      |
+| `KOMAC_CREATED_WITH`     | `--created-with`       |
+| `KOMAC_CREATED_WITH_URL` | `--created-with-url`   |
+
+## Examples
+
+### Single installer URL
+
+```bash
+komac update Publisher.PackageName \
+  --version 2.1.0 \
+  --urls https://example.com/installer.exe \
+  --submit
+```
+
+### Multiple URLs for different architectures
+
+Supply all architecture variants in a single command. Komac matches each new URL to the corresponding previous installer by architecture:
+
+```bash
+komac update Publisher.PackageName \
+  --version 2.1.0 \
+  --urls \
+    https://example.com/installer-x64.exe \
+    https://example.com/installer-x86.exe \
+    https://example.com/installer-arm64.exe \
+  --submit \
+  --token "$GITHUB_TOKEN"
+```
+
+### Replace the current latest version
+
+Use `--replace` to simultaneously add a new version and delete an old one within the same pull request:
+
+```bash
+komac update Publisher.PackageName \
+  --version 2.1.0 \
+  --urls https://example.com/installer.exe \
+  --replace \
+  --submit
+```
+
+You can also specify an explicit version to replace instead of `latest`:
+
+```bash
+komac update Publisher.PackageName \
+  --version 2.1.0 \
+  --urls https://example.com/installer.exe \
+  --replace 2.0.0 \
+  --submit
+```
+
+### CI / GitHub Actions (non-interactive)
+
+```bash
+komac update Publisher.PackageName \
+  --version "$VERSION" \
+  --urls "$INSTALLER_URL" \
+  --submit \
+  --token "$GITHUB_TOKEN"
+```
+
+<Note>
+  `komac update` requires the package to already exist in `microsoft/winget-pkgs`. To add a completely new package, use [`komac new`](/commands/new).
+</Note>
+
+<Tip>
+  When one of your `--urls` points to a GitHub release asset, Komac automatically updates the `ReleaseNotesUrl` and `ReleaseNotes` fields from the GitHub release. You can override this with `--release-notes-url`.
+</Tip>
+
+<Warning>
+  If you use `--replace`, the specified version must already exist in `microsoft/winget-pkgs`. Passing a version that does not exist will produce an error showing the closest matching version.
+</Warning>

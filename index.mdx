@@ -1,133 +1,84 @@
 ---
-title: "Introduction"
-description: "Welcome to the new home for your documentation"
-icon: 'star'
+title: "Komac — WinGet manifest creator for winget-pkgs"
+description: "Komac is the fastest way to create and submit WinGet package manifests. Deep installer analysis, GitHub integration, and zero YAML wrangling."
 ---
 
-## Setting up
+Komac is a fast, intelligent CLI tool for creating and submitting [WinGet](https://github.com/microsoft/winget-pkgs) package manifests. It analyzes installers deeply — extracting metadata from Inno Setup, NSIS, MSI, MSIX, Burn, and ZIP packages — and automates the entire pull request workflow to `microsoft/winget-pkgs`.
 
-Get your documentation site up and running in minutes.
-
-<Card
-  title="Start here"
-  icon="rocket"
-  href="/quickstart"
-  horizontal
->
-  Follow our three step quickstart guide.
-</Card>
-
-## Make it yours
-
-Design a docs site that looks great and empowers your users.
-
-<Columns cols={2}>
-  <Card
-    title="Edit locally"
-    icon="pen-to-square"
-    href="/development"
-  >
-    Edit your docs locally and preview them in real time.
+<CardGroup cols={2}>
+  <Card title="Installation" icon="download" href="/installation">
+    Install Komac on Windows, Linux, or macOS in seconds
   </Card>
-  <Card
-    title="Customize your site"
-    icon="palette"
-    href="/essentials/settings"
-  >
-    Customize the design and colors of your site to match your brand.
+  <Card title="Quickstart" icon="rocket" href="/quickstart">
+    Create your first WinGet manifest in three steps
   </Card>
-    <Card
-    title="Set up navigation"
-    icon="map"
-    href="/essentials/navigation"
-  >
-    Organize your docs to help users find what they need and succeed with your product.
+  <Card title="Command Reference" icon="terminal" href="/commands/new">
+    Explore every command, flag, and option
   </Card>
-  <Card
-    title="API documentation"
-    icon="terminal"
-    href="/api-reference/introduction"
-  >
-    Auto-generate API documentation from OpenAPI specifications.
+  <Card title="GitHub Actions" icon="circle-play" href="/guides/github-actions">
+    Automate manifest submissions on every release
   </Card>
-</Columns>
+</CardGroup>
 
-## Create beautiful pages
+## Why Komac?
 
-Everything you need to create world-class documentation.
+Komac goes further than other manifest tools by performing deep installer analysis — reading Inno Setup scripts, MSI property tables, MSIX manifests, and more — to automatically fill in fields that other tools miss or require you to enter manually.
 
-<Columns cols={2}>
-  <Card
-    title="Write with MDX"
-    icon="pen-fancy"
-    href="/essentials/markdown"
-  >
-    Use MDX to style your docs pages.
+<CardGroup cols={2}>
+  <Card title="Deep installer analysis" icon="magnifying-glass">
+    Extracts metadata from Inno Setup, NSIS, MSI, MSIX, Burn, and ZIP installers automatically
   </Card>
-  <Card
-    title="Code samples"
-    icon="code"
-    href="/essentials/code"
-  >
-    Add sample code to demonstrate how to use your product.
+  <Card title="Cross-platform" icon="globe">
+    Works on Windows, Linux, and macOS — including MSI parsing on Linux and macOS
   </Card>
-  <Card
-    title="Images"
-    icon="image"
-    href="/essentials/images"
-  >
-    Display images and other media.
+  <Card title="GitHub integration" icon="github">
+    Pulls release notes, license info, and publisher data directly from GitHub releases
   </Card>
-  <Card
-    title="Reusable snippets"
-    icon="recycle"
-    href="/essentials/reusable-snippets"
-  >
-    Write once and reuse across your docs.
+  <Card title="No telemetry" icon="shield-halved">
+    Zero data collection. Your tokens and package data stay on your machine
   </Card>
-</Columns>
+</CardGroup>
 
-## Make your content agent ready
+## Get started
 
-Make your docs work for humans and AI agents alike.
+<Steps>
+  <Step title="Install Komac">
+    Install via WinGet, Homebrew, Scoop, or Cargo depending on your platform.
 
-<Columns cols={2}>
-  <Card
-    title="Prompt component"
-    icon="robot"
-    href="/agent-ready/prompt"
-  >
-    Embed shareable AI prompts readers can copy or open in Cursor.
-  </Card>
-  <Card
-    title="Visibility"
-    icon="eye"
-    href="/agent-ready/visibility"
-  >
-    Show different content to humans and agents reading your docs.
-  </Card>
-  <Card
-    title="Contextual menu"
-    icon="bolt"
-    href="/agent-ready/contextual"
-  >
-    Give readers one-click access to Claude, ChatGPT, Cursor, and more.
-  </Card>
-  <Card
-    title="AI coding tools"
-    icon="wand-magic-sparkles"
-    href="/ai-tools/claude-code"
-  >
-    Set up Claude Code, Cursor, or Windsurf with Mintlify's skill.
-  </Card>
-</Columns>
+    ```bash
+    winget install komac
+    ```
+  </Step>
+  <Step title="Add your GitHub token">
+    Komac needs a GitHub classic token with the `public_repo` scope to submit pull requests.
 
-## Need inspiration?
+    ```bash
+    komac token update
+    ```
+  </Step>
+  <Step title="Update a package">
+    Point Komac at your installer URLs and it handles the rest — analysis, manifest generation, and PR submission.
 
-<Card
-  title="See complete examples"
-  icon="stars"
-  href="https://mintlify.com/customers"
->
-  Browse our showcase of exceptional documentation sites.
-</Card>
+    ```bash
+    komac update Publisher.Package --version 1.2.3 \
+      --urls https://example.com/installer.exe \
+      --submit
+    ```
+  </Step>
+</Steps>
+
+## Feature comparison
+
+Komac outperforms other WinGet manifest tools with deeper analysis and broader platform support.
+
+| Feature | Komac | WingetCreate | YamlCreate |
+|---|:---:|:---:|:---:|
+| Full Inno Setup value retrieval | ✅ | ❌ | ❌ |
+| Full MSI value retrieval | ✅ | Partial | Partial |
+| Linux & macOS MSI support | ✅ | ❌ | ❌ |
+| Full MSIX value retrieval | ✅ | Partial | Partial |
+| GitHub release notes retrieval | ✅ | ❌ | ❌ |
+| Release date identification | ✅ | ❌ | ❌ |
+| Fully cross-platform | ✅ | ❌ | Limited |
+| No telemetry | ✅ | ⭕ | ✅ |
+| Download progress bar & ETA | ✅ | ❌ | ❌ |

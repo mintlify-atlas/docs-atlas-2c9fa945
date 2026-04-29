@@ -1,0 +1,60 @@
+---
+title: "komac sync — Sync your winget-pkgs fork with upstream"
+description: "Use komac sync to merge the latest commits from microsoft/winget-pkgs into your fork. Keeps your fork clean before submitting new manifests."
+---
+
+`komac sync` fetches the latest commits from `microsoft/winget-pkgs` and merges them into the default branch of your fork. Because Komac submits PRs from branches on your fork, keeping your fork up-to-date ensures that new branches are created from a clean base and avoids merge conflicts. The command is also available as `komac sync-fork` and `komac merge-upstream`.
+
+## Usage
+
+```bash
+komac sync [OPTIONS]
+```
+
+**Visible aliases:** `sync-fork`, `merge-upstream`
+
+## Parameters
+
+<ParamField path="--force" type="boolean">
+  Short: `-f`. Merge upstream changes even if your fork's default branch has diverged from upstream (i.e. a non-fast-forward merge). This rewrites your fork's default branch to match upstream, discarding any commits that exist only in your fork.
+</ParamField>
+
+<ParamField path="--token" type="string">
+  Short: `-t`. A GitHub classic personal access token with the `public_repo` scope. Also readable from the `GITHUB_TOKEN` environment variable.
+</ParamField>
+
+## Environment variables
+
+| Variable       | Equivalent flag |
+|----------------|-----------------|
+| `GITHUB_TOKEN` | `--token`       |
+
+## Examples
+
+### Standard sync
+
+```bash
+komac sync
+```
+
+If your fork is already up-to-date, Komac prints a message and exits immediately without making any changes.
+
+### Force sync (overwrite diverged fork)
+
+```bash
+komac sync --force
+```
+
+### In a CI pipeline
+
+```bash
+komac sync --token "$GITHUB_TOKEN"
+```
+
+<Warning>
+  Using `--force` rewrites your fork's default branch to exactly match upstream. Any commits you have pushed directly to your fork's default branch — rather than to a feature branch — will be lost. Your fork's default branch should not contain custom commits; all contributions to `winget-pkgs` should go through pull requests on dedicated branches.
+</Warning>
+
+<Tip>
+  Run `komac sync` before every `komac update` or `komac new` session. This reduces the chance of your PR being rejected due to a merge conflict with recently merged manifests.
+</Tip>

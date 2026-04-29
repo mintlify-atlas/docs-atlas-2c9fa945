@@ -1,0 +1,124 @@
+---
+title: "komac list — List all versions of a WinGet package"
+description: "Use komac list to query all available versions of a package in winget-pkgs. Supports JSON, YAML, and plain text output with optional count."
+---
+
+`komac list` queries `microsoft/winget-pkgs` and prints every published version of the specified package, sorted in ascending order. By default the output is plain text, one version per line. You can switch to structured formats for use in scripts and pipelines. The command is also available as `komac list-versions`.
+
+## Usage
+
+```bash
+komac list <PACKAGE_IDENTIFIER> [OPTIONS]
+```
+
+**Visible alias:** `list-versions`
+
+## Parameters
+
+<ParamField path="package-identifier" type="string" required>
+  The package's unique identifier (e.g. `Publisher.PackageName`). This is a positional argument — no flag name is needed.
+</ParamField>
+
+<ParamField path="--json" type="boolean">
+  Output the list of versions as compact (minified) JSON.
+</ParamField>
+
+<ParamField path="--pretty-json" type="boolean">
+  Output the list of versions as prettified, indented JSON.
+</ParamField>
+
+<ParamField path="--yaml" type="boolean">
+  Output the list of versions as YAML.
+</ParamField>
+
+<ParamField path="--count" type="boolean">
+  After printing the versions, print a summary line with the total number of versions (e.g. `There are 12 versions`). Can be combined with any output format.
+</ParamField>
+
+<ParamField path="--token" type="string">
+  Short: `-t`. A GitHub classic personal access token with the `public_repo` scope. Also readable from the `GITHUB_TOKEN` environment variable.
+</ParamField>
+
+<Note>
+  `--json`, `--pretty-json`, and `--yaml` are mutually exclusive. Only one output format can be active at a time.
+</Note>
+
+## Environment variables
+
+| Variable       | Equivalent flag |
+|----------------|-----------------|
+| `GITHUB_TOKEN` | `--token`       |
+
+## Examples
+
+### Plain text (default)
+
+```bash
+komac list Publisher.PackageName
+```
+
+```text
+1.0.0
+1.1.0
+1.2.0
+2.0.0
+```
+
+### Compact JSON
+
+```bash
+komac list Publisher.PackageName --json
+```
+
+```json
+["1.0.0","1.1.0","1.2.0","2.0.0"]
+```
+
+### Prettified JSON
+
+```bash
+komac list Publisher.PackageName --pretty-json
+```
+
+```json
+[
+  "1.0.0",
+  "1.1.0",
+  "1.2.0",
+  "2.0.0"
+]
+```
+
+### YAML
+
+```bash
+komac list Publisher.PackageName --yaml
+```
+
+```yaml
+- 1.0.0
+- 1.1.0
+- 1.2.0
+- 2.0.0
+```
+
+### Plain text with count
+
+```bash
+komac list Publisher.PackageName --count
+```
+
+```text
+1.0.0
+1.1.0
+1.2.0
+2.0.0
+There are 4 versions
+```
+
+### Use in a shell script
+
+```bash
+LATEST=$(komac list Publisher.PackageName --json | jq -r '.[-1]')
+echo "Latest version: $LATEST"
+```

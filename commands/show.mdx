@@ -1,0 +1,92 @@
+---
+title: "komac show — Display manifests for a package version"
+description: "Use komac show to fetch and print the manifest files for any version of a WinGet package. Displays installer, locale, and version manifests in YAML format."
+---
+
+`komac show` fetches the manifest files for a given package and version from `microsoft/winget-pkgs` and prints them to standard output in YAML format. When no version is specified, Komac retrieves manifests for the latest version. By default all manifest types are printed; use the flags below to display only specific ones.
+
+## Usage
+
+```bash
+komac show <PACKAGE_IDENTIFIER> [OPTIONS]
+```
+
+## Parameters
+
+<ParamField path="package-identifier" type="string" required>
+  The package's unique identifier (e.g. `Publisher.PackageName`). This is a positional argument — no flag name is needed.
+</ParamField>
+
+<ParamField path="--version" type="string">
+  Short: `-v`. The specific version to retrieve manifests for. If omitted, Komac fetches the latest version.
+</ParamField>
+
+<ParamField path="--installer-manifest" type="boolean">
+  Short: `-i`. Display only the installer manifest.
+</ParamField>
+
+<ParamField path="--defaultlocale-manifest" type="boolean">
+  Short: `-d`. Display only the default locale manifest.
+</ParamField>
+
+<ParamField path="--locale-manifests" type="boolean">
+  Short: `-l`. Display all additional locale manifests.
+</ParamField>
+
+<ParamField path="--version-manifest" type="boolean">
+  Display only the version manifest.
+</ParamField>
+
+<ParamField path="--token" type="string">
+  Short: `-t`. A GitHub classic personal access token with the `public_repo` scope. Also readable from the `GITHUB_TOKEN` environment variable.
+</ParamField>
+
+<Note>
+  When none of `--installer-manifest`, `--defaultlocale-manifest`, `--locale-manifests`, or `--version-manifest` are provided, all manifest types are printed together.
+</Note>
+
+## Environment variables
+
+| Variable       | Equivalent flag |
+|----------------|-----------------|
+| `GITHUB_TOKEN` | `--token`       |
+
+## Examples
+
+### Show all manifests for the latest version
+
+```bash
+komac show Publisher.PackageName
+```
+
+### Show all manifests for a specific version
+
+```bash
+komac show Publisher.PackageName --version 2.1.0
+```
+
+### Show only the installer manifest
+
+```bash
+komac show Publisher.PackageName --version 2.1.0 --installer-manifest
+```
+
+### Show only the default locale manifest
+
+```bash
+komac show Publisher.PackageName -d
+```
+
+### Show all locale manifests (including non-default)
+
+```bash
+komac show Publisher.PackageName --locale-manifests
+```
+
+<Tip>
+  Pipe the output to a YAML viewer or `less` for easier reading with large manifests:
+
+  ```bash
+  komac show Publisher.PackageName | less
+  ```
+</Tip>

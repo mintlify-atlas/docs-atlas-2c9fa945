@@ -1,0 +1,182 @@
+---
+title: "komac new — Create a new WinGet package manifest"
+description: "Use komac new to create a brand-new package manifest from scratch. Supports interactive prompts, silent flags, and automatic GitHub metadata retrieval."
+---
+
+`komac new` creates a complete package manifest set from scratch — installer manifest, default locale manifest, and version manifest. When you provide a GitHub URL as one of your installer URLs, Komac automatically retrieves the publisher name, package URL, license, description, and release notes from that repository. All fields that you don't supply as flags are collected via interactive prompts.
+
+## Usage
+
+```bash
+komac new [PACKAGE_IDENTIFIER] [OPTIONS]
+```
+
+## Parameters
+
+<ParamField path="package-identifier" type="string">
+  The package's unique identifier (e.g. `Publisher.PackageName`). If omitted, you are prompted interactively.
+</ParamField>
+
+<ParamField path="--version" type="string">
+  Short: `-v`. The package version string (e.g. `1.2.3`). If omitted, you are prompted interactively.
+</ParamField>
+
+<ParamField path="--urls" type="string[]">
+  Short: `-u`. One or more installer URLs, separated by spaces. If omitted, Komac prompts you to enter URLs one at a time and stops when you press **Escape**.
+</ParamField>
+
+<ParamField path="--package-locale" type="string">
+  The BCP 47 language tag for the package's default locale (e.g. `en-US`). Defaults to `en-US` if not provided.
+</ParamField>
+
+<ParamField path="--publisher" type="string">
+  The publisher name. Komac attempts to infer this from installer metadata and the GitHub API.
+</ParamField>
+
+<ParamField path="--publisher-url" type="string">
+  URL to the publisher's website.
+</ParamField>
+
+<ParamField path="--publisher-support-url" type="string">
+  URL to the publisher's support page (e.g. a GitHub issues page).
+</ParamField>
+
+<ParamField path="--package-name" type="string">
+  The human-readable name of the package. Komac attempts to infer this from installer metadata.
+</ParamField>
+
+<ParamField path="--package-url" type="string">
+  URL to the package's homepage or repository.
+</ParamField>
+
+<ParamField path="--moniker" type="string">
+  A short, unique alias for the package (e.g. `vscode`).
+</ParamField>
+
+<ParamField path="--author" type="string">
+  The package author's name.
+</ParamField>
+
+<ParamField path="--license" type="string">
+  The package license identifier (e.g. `MIT`, `GPL-3.0`). Komac infers this from the GitHub repository when possible.
+</ParamField>
+
+<ParamField path="--license-url" type="string">
+  URL to the license file.
+</ParamField>
+
+<ParamField path="--copyright" type="string">
+  The copyright notice string (e.g. `Copyright (c) 2024 Publisher`).
+</ParamField>
+
+<ParamField path="--copyright-url" type="string">
+  URL to the copyright or legal notice page.
+</ParamField>
+
+<ParamField path="--short-description" type="string">
+  A one-line description of the package. Komac infers this from the GitHub repository description when possible.
+</ParamField>
+
+<ParamField path="--description" type="string">
+  A longer, multi-line description of the package.
+</ParamField>
+
+<ParamField path="--release-notes-url" type="string">
+  URL to the release notes for this version.
+</ParamField>
+
+<ParamField path="--concurrent-downloads" type="number">
+  The number of installer files to download simultaneously. Defaults to the number of logical CPU cores on your machine.
+</ParamField>
+
+<ParamField path="--resolves" type="number[]">
+  One or more GitHub issue numbers that this pull request resolves (e.g. `--resolves 123 456`).
+</ParamField>
+
+<ParamField path="--submit" type="boolean">
+  Short: `-s`. Automatically open a pull request to `microsoft/winget-pkgs` without a confirmation prompt. Useful for non-interactive or CI environments.
+</ParamField>
+
+<ParamField path="--created-with" type="string">
+  Name of the external tool that invoked Komac. Used to attribute automation in PR descriptions. Also readable from the `KOMAC_CREATED_WITH` environment variable.
+</ParamField>
+
+<ParamField path="--created-with-url" type="string">
+  URL to the external tool that invoked Komac. Also readable from the `KOMAC_CREATED_WITH_URL` environment variable.
+</ParamField>
+
+<ParamField path="--output" type="string">
+  Short: `-o`. Directory path to write the generated manifest files to. Also readable from the `OUTPUT_DIRECTORY` environment variable. Use this with `--dry-run` to save manifests locally without submitting.
+</ParamField>
+
+<ParamField path="--open-pr" type="boolean">
+  Open the pull request URL in your browser automatically after it is created. Also readable from the `OPEN_PR` environment variable.
+</ParamField>
+
+<ParamField path="--dry-run" type="boolean">
+  Generate and display the manifests without submitting a pull request or prompting for confirmation. Also readable from the `DRY_RUN` environment variable.
+</ParamField>
+
+<ParamField path="--skip-pr-check" type="boolean">
+  Skip the check for an existing open pull request for the same package and version. Also readable from the `SKIP_PR_CHECK` environment variable.
+</ParamField>
+
+<ParamField path="--token" type="string">
+  Short: `-t`. A GitHub classic personal access token with the `public_repo` scope. Also readable from the `GITHUB_TOKEN` environment variable.
+</ParamField>
+
+## Environment variables
+
+| Variable                | Equivalent flag       |
+|-------------------------|-----------------------|
+| `GITHUB_TOKEN`          | `--token`             |
+| `OUTPUT_DIRECTORY`      | `--output`            |
+| `DRY_RUN`               | `--dry-run`           |
+| `OPEN_PR`               | `--open-pr`           |
+| `SKIP_PR_CHECK`         | `--skip-pr-check`     |
+| `KOMAC_CREATED_WITH`    | `--created-with`      |
+| `KOMAC_CREATED_WITH_URL`| `--created-with-url`  |
+
+## Examples
+
+### Interactive mode
+
+Run without any flags to be guided through all prompts:
+
+```bash
+komac new
+```
+
+### Non-interactive (CI) mode
+
+Supply all required values as flags to skip every prompt and submit immediately:
+
+```bash
+komac new Publisher.PackageName \
+  --version 2.0.0 \
+  --urls https://example.com/installer-x64.exe https://example.com/installer-arm64.exe \
+  --publisher "Acme Corp" \
+  --package-name "My App" \
+  --short-description "A fast app for doing things" \
+  --license MIT \
+  --submit \
+  --token "$GITHUB_TOKEN"
+```
+
+### Save manifests locally without submitting
+
+```bash
+komac new Publisher.PackageName \
+  --version 2.0.0 \
+  --urls https://example.com/installer.exe \
+  --dry-run \
+  --output ./manifests
+```
+
+<Note>
+  When one of your `--urls` points to a GitHub release or asset, Komac automatically queries the GitHub API to pre-fill publisher, license, description, tags, and release notes. You can still override any of these with explicit flags.
+</Note>
+
+<Tip>
+  Combine `--output` with `komac submit` to generate manifests locally first, inspect them, and submit them in a separate step.
+</Tip>

@@ -1,0 +1,80 @@
+{
+  "projectType": "cli-tool",
+  "projectName": "Komac",
+  "projectDescription": "A fast, intelligent CLI tool written in Rust for creating and submitting WinGet package manifests to microsoft/winget-pkgs.",
+  "theme": "palm",
+  "primaryColor": "#94cb04",
+  "lightColor": "#545454",
+  "darkColor": null,
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "installation",
+              "quickstart"
+            ]
+          },
+          {
+            "group": "Commands",
+            "pages": [
+              "commands/new",
+              "commands/update",
+              "commands/remove",
+              "commands/submit",
+              "commands/list-versions",
+              "commands/sync-fork",
+              "commands/cleanup",
+              "commands/analyze"
+            ]
+          },
+          {
+            "group": "Configuration",
+            "pages": [
+              "configuration/github-token",
+              "configuration/environment-variables",
+              "configuration/shell-completion"
+            ]
+          },
+          {
+            "group": "Guides",
+            "pages": [
+              "guides/github-actions",
+              "guides/automation",
+              "guides/contributing"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Automated WinGet manifest creation and submission via GitHub PRs",
+    "Deep installer analysis for Inno Setup, NSIS, MSI, MSIX, Burn, and ZIP",
+    "Cross-platform support (Windows, Linux, macOS)",
+    "GitHub integration: fetches release notes, license, and publisher info automatically",
+    "Interactive prompts with smart defaults and non-interactive/CI mode support",
+    "Fork management: sync upstream, cleanup merged branches",
+    "Concurrent installer downloads with progress tracking",
+    "No telemetry"
+  ],
+  "publicApiSurface": [
+    "komac new",
+    "komac update <package-identifier> --version <version> --urls <urls>",
+    "komac remove <package-identifier> --version <version>",
+    "komac submit <path>",
+    "komac list <package-identifier>",
+    "komac show <package-identifier> --version <version>",
+    "komac sync",
+    "komac cleanup",
+    "komac analyze <file-path>",
+    "komac token update",
+    "komac token remove",
+    "komac complete [shell]",
+    "komac remove-dead-versions <package-identifier>"
+  ]
+}

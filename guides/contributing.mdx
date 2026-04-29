@@ -1,0 +1,111 @@
+---
+title: "Contribute to Komac"
+description: "Learn how to set up a local development environment, test your changes with Docker, and open a pull request to contribute to Komac."
+---
+
+Contributions to Komac are welcome and greatly appreciated. Whether you're fixing a bug, adding a feature, or improving documentation, this guide walks you through everything you need to get from idea to pull request.
+
+## Prerequisites
+
+Before you start, make sure you have the following installed:
+
+- **Rust** — Komac requires Rust 1.95 or later (MSRV). Install via [rustup](https://rustup.rs).
+- **Docker** — Optional, but recommended for testing in an isolated environment that closely mirrors CI.
+
+## Contributing workflow
+
+<Steps>
+  <Step title="Fork the repository">
+    Fork [russellbanks/Komac](https://github.com/russellbanks/Komac) on GitHub, then clone your fork locally.
+  </Step>
+  <Step title="Create a feature branch">
+    ```bash
+    git checkout -b feat/new-feature
+    ```
+  </Step>
+  <Step title="Make your changes">
+    Implement your fix or feature. See the [building locally](#building-locally) and [code style](#code-style) sections below for guidance.
+  </Step>
+  <Step title="Test your changes with Docker">
+    Build and run Komac in a Docker container to verify your changes in a clean environment. See the [Docker testing](#docker-testing) section below.
+  </Step>
+  <Step title="Commit your changes">
+    ```bash
+    git commit -m 'Add some feature'
+    ```
+  </Step>
+  <Step title="Push your branch">
+    ```bash
+    git push origin feat/new-feature
+    ```
+  </Step>
+  <Step title="Open a pull request">
+    Open a pull request against the `main` branch of `russellbanks/Komac` on GitHub. Describe what your change does and why.
+  </Step>
+</Steps>
+
+## Building locally
+
+To build Komac from source:
+
+```bash
+cargo build
+```
+
+To build the optimized release binary:
+
+```bash
+cargo build --release
+```
+
+To run the test suite:
+
+```bash
+cargo test
+```
+
+## Code style
+
+Komac uses standard Rust formatting and linting. Before opening a pull request, run both of the following:
+
+```bash
+cargo fmt
+```
+
+```bash
+cargo clippy
+```
+
+Fix any warnings that `clippy` reports. The CI pipeline checks both formatting and lint errors.
+
+## Docker testing
+
+Using Docker is the recommended way to test your changes before submitting a pull request. It gives you a reproducible environment and avoids any differences between your local machine and CI.
+
+**Build the image:**
+
+```bash
+docker build ./ --tag komac_dev:latest
+```
+
+**Start an interactive shell:**
+
+```bash
+docker run -it komac_dev bash
+```
+
+Run any Komac commands inside the container to verify your changes. Use `exit` to stop the container when you're done.
+
+<Note>
+  When running the Docker container on Windows using the WSL engine, the keyring is not supported — `komac token update` will not persist your GitHub token inside the container. Use the `GITHUB_TOKEN` environment variable as a workaround:
+
+  ```bash
+  docker run -it -e GITHUB_TOKEN="$YOUR_TOKEN" komac_dev bash
+  ```
+
+  This is a [known limitation](https://github.com/hwchen/keyring-rs/blob/47c8daf3e6178a2282ae3e8670d1ea7fa736b8cb/src/secret_service.rs#L73-L77) of the keyring crate on WSL.
+</Note>
+
+## Reporting bugs and requesting features
+
+If you find a bug or have an idea for a new feature, open an issue on [GitHub Issues](https://github.com/russellbanks/Komac/issues). Check whether an issue already exists before opening a new one.

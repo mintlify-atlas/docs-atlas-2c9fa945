@@ -1,0 +1,106 @@
+---
+title: "komac analyze — Inspect installer files locally"
+description: "Use komac analyze to parse a local installer file and display detected metadata in YAML format. Useful for debugging before submitting manifests."
+---
+
+`komac analyze` reads a local installer file, runs the same analysis that `komac new` and `komac update` use internally, and prints the detected metadata to standard output in YAML format. This lets you inspect exactly what Komac would write into an installer manifest — without needing a GitHub token or network connection. The command is also available as `komac analyse`.
+
+## Usage
+
+```bash
+komac analyze <FILE_PATH> [OPTIONS]
+```
+
+**Visible alias:** `analyse`
+
+## Parameters
+
+<ParamField path="file-path" type="string" required>
+  Path to the local installer file to analyze. The file must exist and must be a regular file (not a directory). This is a positional argument — no flag name is needed.
+</ParamField>
+
+<ParamField path="--hash" type="boolean">
+  Alias: `--sha256`. Hash the file with SHA-256 and include the digest in the `InstallerSha256` field of the output. Hashing is skipped by default because it can be slow for large files.
+</ParamField>
+
+<ParamField path="--no-hash" type="boolean">
+  Alias: `--no-sha256`. Explicitly skip hashing the file. This is the default behavior, so this flag is only needed if you want to override a previous `--hash` flag in a script.
+</ParamField>
+
+## What Komac detects
+
+Komac extracts the following fields from the installer file (where available):
+
+| Field                  | Description                                                  |
+|------------------------|--------------------------------------------------------------|
+| `InstallerType`        | Detected installer technology (e.g. `inno`, `nullsoft`, `msi`, `msix`, `burn`, `exe`, `zip`) |
+| `Architecture`         | Target CPU architecture (`x86`, `x64`, `arm64`, etc.)        |
+| `Scope`                | Installation scope (`machine` or `user`)                     |
+| `InstallerSha256`      | SHA-256 digest of the file (only when `--hash` is passed)    |
+| `AppsAndFeaturesEntries` | Add/Remove Programs metadata extracted from the installer  |
+| `NestedInstallerType`  | For ZIP bundles, the type of the nested installer            |
+| `NestedInstallerFiles` | For ZIP bundles, the paths of nested installer files         |
+
+## Examples
+
+### Analyze an installer
+
+```bash
+komac analyze ./MyApp-2.1.0-x64.exe
+```
+
+Example output:
+
+```yaml
+InstallerType: inno
+Architecture: x64
+Scope: machine
+AppsAndFeaturesEntries:
+  - Publisher: Acme Corp
+    DisplayName: My App
+    DisplayVersion: 2.1.0
+```
+
+### Analyze with SHA-256 hashing
+
+```bash
+komac analyze ./MyApp-2.1.0-x64.exe --hash
+```
+
+Example output:
+
+```yaml
+InstallerType: inno
+Architecture: x64
+InstallerSha256: 3b4c2a1f...
+Scope: machine
+AppsAndFeaturesEntries:
+  - Publisher: Acme Corp
+    DisplayName: My App
+    DisplayVersion: 2.1.0
+```
+
+### Analyze a ZIP bundle with a nested installer
+
+```bash
+komac analyze ./MyApp-2.1.0.zip --hash
+```
+
+Example output:
+
+```yaml
+InstallerType: zip
+Architecture: x64
+InstallerSha256: a1b2c3d4...
+NestedInstallerType: exe
+NestedInstallerFiles:
+  - RelativeFilePath: MyApp-setup.exe
+```
+
+<Tip>
+  Use `komac analyze` before running `komac new` to verify that Komac correctly detects the installer type and architecture for an unfamiliar package. If the detected metadata looks wrong, you can correct it manually during the interactive prompts.
+</Tip>
+
+<Note>
+  `komac analyze` does not require a GitHub token or an internet connection. It operates entirely on the local file you provide.
+</Note>

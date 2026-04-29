@@ -1,81 +1,135 @@
 ---
-title: "Quickstart"
-description: "Start building awesome documentation in minutes"
-icon: 'rocket'
+title: "Get started with Komac"
+description: "Learn how to install Komac, configure a GitHub token, and submit your first WinGet package manifest pull request in under five minutes."
 ---
 
-## Get started in three steps
+Komac automates the full WinGet manifest workflow: it downloads your installers, analyzes them, generates the required YAML files, and opens a pull request to `microsoft/winget-pkgs` — all from a single command. This guide walks you through everything you need to go from zero to a submitted PR.
 
-Get your documentation site running locally and make your first customization.
+<Steps>
+  <Step title="Install Komac">
+    Install Komac using your preferred method. WinGet is the quickest option on Windows; Cargo works on every platform.
 
-### Step 1: Set up your local environment
+    <CodeGroup>
 
-<AccordionGroup>
-  <Accordion icon="copy" title="Clone your docs locally">
-    During the onboarding process, you created a GitHub repository with your docs content if you didn't already have one. You can find a link to this repository in your [dashboard](https://dashboard.mintlify.com).
-    
-    To clone the repository locally so that you can make and preview changes to your docs, follow the [Cloning a repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) guide in the GitHub docs.
-  </Accordion>
-  <Accordion icon="rectangle-terminal" title="Start the preview server">
-    1. Install the Mintlify CLI: `npm i -g mint`
-    2. Navigate to your docs directory and run: `mint dev`
-    3. Open `http://localhost:3000` to see your docs live!
-    
-    <Tip>Your preview updates automatically as you edit files.</Tip>
-  </Accordion>
-</AccordionGroup>
+    ```bash WinGet (Windows)
+    winget install komac
+    ```
 
-### Step 2: Deploy your changes
+    ```bash Homebrew (macOS)
+    brew install komac
+    ```
 
-<AccordionGroup>
-  <Accordion icon="github" title="Install our GitHub app">
-    Install the Mintlify GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app).
-    
-    Our GitHub app automatically deploys your changes to your docs site, so you don't need to manage deployments yourself.
-</Accordion>
-<Accordion icon="palette" title="Update your site name and colors">
-    For a first change, let's update the name and colors of your docs site.
+    ```bash Cargo (all platforms)
+    cargo install --locked komac
+    ```
 
-    1. Open `docs.json` in your editor.
-    2. Change the `"name"` field to your project name.
-    3. Update the `"colors"` to match your brand.
-    4. Save and see your changes instantly at `http://localhost:3000`.
+    </CodeGroup>
 
-    <Tip>Try changing the primary color to see an immediate difference!</Tip>
-  </Accordion>
-</AccordionGroup>
+    For `.deb`, `.rpm`, and portable binary options, see the [installation guide](/installation).
 
-### Step 3: Go live
+    Verify the installation:
 
-<Accordion icon="rocket" title="Publish your docs">
-  1. Commit and push your changes.
-  2. Your docs will update and be live in moments!
-</Accordion>
+    ```bash
+    komac --version
+    ```
+  </Step>
+  <Step title="Get a GitHub token">
+    Komac submits pull requests to `microsoft/winget-pkgs` on your behalf, so it needs a GitHub personal access token.
+
+    1. Go to [github.com/settings/tokens](https://github.com/settings/tokens) and click **Generate new token (classic)**.
+    2. Give the token a descriptive name, such as `komac`.
+    3. Under **Scopes**, check **public_repo**.
+    4. Click **Generate token** and copy the value — you won't be able to see it again.
+
+    <Note>
+      Komac requires a classic token. Fine-grained tokens can create commits and branches, but cannot open pull requests to `microsoft/winget-pkgs` due to a current GitHub limitation. See [issue #310](https://github.com/russellbanks/Komac/issues/310) for updates.
+    </Note>
+  </Step>
+  <Step title="Store your token">
+    Save the token to your system's secure credential store so you don't need to pass it on every command:
+
+    ```bash
+    komac token update
+    ```
+
+    Komac will prompt you to paste your token. It is stored using the native keychain on each platform (Windows Credential Manager, macOS Keychain, or the Linux Secret Service).
+
+    If you prefer not to store a token, you can pass it inline with `--token` or set the `GITHUB_TOKEN` environment variable instead.
+  </Step>
+  <Step title="Create your first manifest">
+    Choose the right command based on whether the package already exists in `microsoft/winget-pkgs`.
+
+    **Adding a new package**
+
+    Use `komac new` to create a package that does not yet exist in winget-pkgs. Komac guides you through every required field interactively:
+
+    ```bash
+    komac new
+    ```
+
+    You can also pass values directly to skip prompts:
+
+    ```bash
+    komac new Publisher.Package \
+      --version 1.0.0 \
+      --urls https://example.com/installer.exe \
+      --submit
+    ```
+
+    **Updating an existing package**
+
+    Use `komac update` to add a new version to a package that is already in winget-pkgs. Komac fetches the existing manifests and merges the new version on top:
+
+    ```bash
+    komac update Publisher.Package \
+      --version 1.2.3 \
+      --urls https://example.com/installer.exe \
+      --submit
+    ```
+
+    For multiple installer architectures, list all URLs separated by spaces:
+
+    ```bash
+    komac update Publisher.Package \
+      --version 1.2.3 \
+      --urls https://example.com/installer-x64.exe https://example.com/installer-x86.exe \
+      --submit
+    ```
+
+    <Tip>
+      Add `--dry-run` to any command to run the full analysis and generate the manifest files locally without submitting a pull request. This is useful for checking the output before going live.
+    </Tip>
+  </Step>
+  <Step title="Review and submit">
+    If you run without `--submit`, Komac shows you the generated manifests and asks whether to open a pull request. Review the output, confirm, and Komac handles the rest:
+
+    - Forks `microsoft/winget-pkgs` to your account if you don't already have a fork
+    - Creates a branch named after the package and version
+    - Pushes the manifest files
+    - Opens a pull request with the correct title and body
+
+    Once the PR is open, the WinGet validation bot runs automated checks. Most valid submissions are merged within a few days.
+  </Step>
+</Steps>
+
+## Using GITHUB_TOKEN instead of a stored token
+
+If you are running Komac in a CI environment or prefer not to use the system keychain, set the `GITHUB_TOKEN` environment variable and Komac will use it automatically:
+
+```bash
+export GITHUB_TOKEN=ghp_...
+komac update Publisher.Package --version 1.2.3 --urls https://example.com/installer.exe --submit
+```
+
+The `--token` flag is also accepted on every command for one-off use.
 
 ## Next steps
 
-Now that you have your docs running, explore these key features:
-
 <CardGroup cols={2}>
-
-<Card title="Write Content" icon="pen-to-square" href="/essentials/markdown">
-  Learn MDX syntax and start writing your documentation.
-</Card>
-
-<Card title="Customize style" icon="palette" href="/essentials/settings">
-  Make your docs match your brand perfectly.
-</Card>
-
-<Card title="Add code examples" icon="square-code" href="/essentials/code">
-  Include syntax-highlighted code blocks.
-</Card>
-
-<Card title="API documentation" icon="code" href="/api-reference/introduction">
-  Auto-generate API docs from OpenAPI specs.
-</Card>
-
+  <Card title="Commands reference" icon="terminal" href="/commands/new">
+    Explore every command, flag, and option available in Komac.
+  </Card>
+  <Card title="Configuration" icon="gear" href="/configuration/github-token">
+    Learn how to manage your GitHub token, environment variables, and shell completions.
+  </Card>
 </CardGroup>
-
-<Note>
-  **Need help?** See our [full documentation](https://mintlify.com/docs) or join our [community](https://mintlify.com/community).
-</Note>

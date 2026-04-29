@@ -1,0 +1,104 @@
+---
+title: "Set up shell completion for Komac"
+description: "Enable tab completion for Komac commands and flags in Bash, Zsh, Fish, PowerShell, or Elvish. Set up once in your shell config with the komac complete command."
+---
+
+Komac can generate a shell completion script that enables tab completion for all its commands, subcommands, and flags. Once set up, pressing Tab while typing a Komac command will suggest or complete the available options automatically.
+
+## The complete command
+
+```bash
+komac complete [shell]
+```
+
+The command outputs a completion script for the specified shell to stdout. You then source that output in your shell's startup file so it is loaded in every new session.
+
+The `complete` command is also available as `komac autocomplete`.
+
+### Supported shells
+
+- `bash`
+- `zsh`
+- `fish`
+- `powershell`
+- `elvish`
+
+### Automatic shell detection
+
+If you omit the shell argument, Komac attempts to detect your current shell from the environment. If detection fails, Komac exits with an error and asks you to specify the shell explicitly.
+
+## Setup instructions
+
+Choose your shell and add the corresponding line to your shell configuration file. After adding it, reload your shell or source the configuration file to activate completion immediately.
+
+<Tabs>
+  <Tab title="Bash">
+    Add the following line to your `~/.bashrc`:
+
+    ```bash
+    echo "source <(komac complete bash)" >> ~/.bashrc
+    ```
+
+    Reload your configuration:
+
+    ```bash
+    source ~/.bashrc
+    ```
+  </Tab>
+  <Tab title="Zsh">
+    Add the following line to your `~/.zshrc`:
+
+    ```bash
+    echo "source <(komac complete zsh)" >> ~/.zshrc
+    ```
+
+    Reload your configuration:
+
+    ```bash
+    source ~/.zshrc
+    ```
+  </Tab>
+  <Tab title="Fish">
+    Add the following line to your `~/.config/fish/config.fish`:
+
+    ```bash
+    echo "source (komac complete fish | psub)" >> ~/.config/fish/config.fish
+    ```
+
+    Reload your configuration:
+
+    ```fish
+    source ~/.config/fish/config.fish
+    ```
+  </Tab>
+  <Tab title="PowerShell">
+    Add the following line to your PowerShell profile (`$PROFILE`):
+
+    ```powershell
+    echo "komac complete powershell | Out-String | Invoke-Expression" >> $PROFILE
+    ```
+
+    Reload your profile in the current session:
+
+    ```powershell
+    . $PROFILE
+    ```
+  </Tab>
+  <Tab title="Elvish">
+    Add the following line to your `~/.elvish/rc.elv`:
+
+    ```bash
+    echo "eval (komac complete elvish | slurp)" >> ~/.elvish/rc.elv
+    ```
+
+    Reload your configuration:
+
+    ```elvish
+    eval (komac complete elvish | slurp)
+    ```
+  </Tab>
+</Tabs>
+
+<Tip>
+  If you want to inspect the generated script before sourcing it, run `komac complete <shell>` on its own and review the output. This is useful for understanding what the script does or for adding it to a system-wide completions directory.
+</Tip>

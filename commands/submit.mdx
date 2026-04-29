@@ -1,0 +1,99 @@
+---
+title: "komac submit — Submit existing manifest files to winget-pkgs"
+description: "Use komac submit to open a pull request from locally saved manifest YAML files. Supports submitting single or multiple packages at once."
+---
+
+`komac submit` reads manifest YAML files from a local directory and opens a pull request to `microsoft/winget-pkgs` for each complete package found. This command is designed for the workflow where you first generate manifests with `komac new --output` or `komac update --output`, inspect or edit them locally, and then submit them in a separate step.
+
+## Usage
+
+```bash
+komac submit <PATH> [OPTIONS]
+```
+
+## Parameters
+
+<ParamField path="path" type="string" required>
+  Path to the directory containing the manifest YAML files. Komac recursively scans the directory for `.yaml` files and groups them by package identifier and version. This is a positional argument — no flag name is needed.
+</ParamField>
+
+<ParamField path="--yes" type="boolean">
+  Short: `-y`. Visible alias: `--submit`. Skip the per-package confirmation prompt and submit immediately.
+</ParamField>
+
+<ParamField path="--all" type="boolean">
+  Short: `-a`. When multiple packages are found in `PATH`, submit all of them without showing a multi-select prompt. If only one package is found, this flag has no effect.
+</ParamField>
+
+<ParamField path="--resolves" type="number[]">
+  One or more GitHub issue numbers that submitting these manifests would resolve.
+</ParamField>
+
+<ParamField path="--open-pr" type="boolean">
+  Open each pull request URL in your browser automatically after it is created. Also readable from the `OPEN_PR` environment variable.
+</ParamField>
+
+<ParamField path="--dry-run" type="boolean">
+  Display the manifest diffs and PR details without actually submitting. Also readable from the `DRY_RUN` environment variable.
+</ParamField>
+
+<ParamField path="--token" type="string">
+  Short: `-t`. A GitHub classic personal access token with the `public_repo` scope. Also readable from the `GITHUB_TOKEN` environment variable.
+</ParamField>
+
+## Environment variables
+
+| Variable       | Equivalent flag |
+|----------------|-----------------|
+| `GITHUB_TOKEN` | `--token`       |
+| `OPEN_PR`      | `--open-pr`     |
+| `DRY_RUN`      | `--dry-run`     |
+
+## Examples
+
+### Submit a single package
+
+If you generated manifests with `komac update --output ./out`, run:
+
+```bash
+komac submit ./out --yes
+```
+
+### Submit multiple packages non-interactively
+
+When `./out` contains manifests for several packages and you want to submit them all:
+
+```bash
+komac submit ./out --all --yes --token "$GITHUB_TOKEN"
+```
+
+### Two-step workflow: generate then submit
+
+First generate the manifests locally and inspect them:
+
+```bash
+komac update Publisher.PackageName \
+  --version 2.1.0 \
+  --urls https://example.com/installer.exe \
+  --output ./manifests
+```
+
+Then, after you've reviewed the YAML files, submit them:
+
+```bash
+komac submit ./manifests --yes
+```
+
+### Dry run to preview what would be submitted
+
+```bash
+komac submit ./manifests --dry-run
+```
+
+<Tip>
+  `komac submit` normalizes key ordering and deduplicates fields in each manifest before submitting, so even manifests you edited by hand will be formatted consistently — the same way `komac new` and `komac update` produce them.
+</Tip>
+
+<Note>
+  When multiple packages are found and neither `--all` nor `--yes` is set, Komac presents an interactive multi-select prompt listing every package and version found. All items are selected by default — deselect any packages you do not want to submit.
+</Note>

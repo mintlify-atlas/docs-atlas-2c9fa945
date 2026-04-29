@@ -1,0 +1,94 @@
+---
+title: "komac remove — Remove a package version from winget-pkgs"
+description: "Use komac remove to open a pull request deleting a specific version from microsoft/winget-pkgs. Requires a reason and the public_repo scope."
+---
+
+`komac remove` opens a pull request to delete the manifest files for a specific version of a package from `microsoft/winget-pkgs`. You must provide a reason for the removal, which is included in the pull request description. Komac validates that the version you specify actually exists before proceeding.
+
+<Warning>
+  Packages and versions should only be removed when there is a legitimate reason — for example, a legal takedown, a version published in error, or a security vulnerability. Do not remove versions simply because they are old.
+</Warning>
+
+## Usage
+
+```bash
+komac remove <PACKAGE_IDENTIFIER> --version <VERSION> [OPTIONS]
+```
+
+## Parameters
+
+<ParamField path="package-identifier" type="string" required>
+  The package's unique identifier (e.g. `Publisher.PackageName`). This is a positional argument — no flag name is needed.
+</ParamField>
+
+<ParamField path="--version" type="string" required>
+  Short: `-v`. The version to remove (e.g. `1.0.0`).
+</ParamField>
+
+<ParamField path="--reason" type="string">
+  Short: `-r`. A brief explanation of why this version is being removed. Must be between 4 and 1000 characters. If omitted, you are prompted interactively.
+</ParamField>
+
+<ParamField path="--resolves" type="number[]">
+  One or more GitHub issue numbers that this removal would resolve.
+</ParamField>
+
+<ParamField path="--submit" type="boolean">
+  Short: `-s`. Automatically open a pull request without a confirmation prompt.
+</ParamField>
+
+<ParamField path="--no-warning" type="boolean">
+  Suppress the "Packages should only be removed when necessary" warning message. Useful for scripted or CI environments where you have already acknowledged this guidance.
+</ParamField>
+
+<ParamField path="--open-pr" type="boolean">
+  Open the pull request URL in your browser automatically after it is created. Also readable from the `OPEN_PR` environment variable.
+</ParamField>
+
+<ParamField path="--token" type="string">
+  Short: `-t`. A GitHub classic personal access token with the `public_repo` scope. Also readable from the `GITHUB_TOKEN` environment variable.
+</ParamField>
+
+## Environment variables
+
+| Variable       | Equivalent flag |
+|----------------|-----------------|
+| `GITHUB_TOKEN` | `--token`       |
+| `OPEN_PR`      | `--open-pr`     |
+
+## Examples
+
+### Interactive mode
+
+Run with only the required positional arguments and Komac will prompt for a reason and confirmation:
+
+```bash
+komac remove Publisher.PackageName --version 1.0.0
+```
+
+### Non-interactive (CI) mode
+
+Supply the reason via flag and use `--submit` to bypass confirmation:
+
+```bash
+komac remove Publisher.PackageName \
+  --version 1.0.0 \
+  --reason "Version published in error, contains a critical security vulnerability" \
+  --submit \
+  --no-warning \
+  --token "$GITHUB_TOKEN"
+```
+
+### Resolving an issue
+
+```bash
+komac remove Publisher.PackageName \
+  --version 1.0.0 \
+  --reason "Removal requested by publisher (DMCA takedown)" \
+  --resolves 999 \
+  --submit
+```
+
+<Note>
+  To remove a package entirely from `winget-pkgs`, you must open a separate pull request to remove each version. There is no single command to delete all versions at once.
+</Note>

@@ -1,0 +1,78 @@
+---
+title: "komac cleanup — Delete merged or closed PR branches"
+description: "Use komac cleanup to remove stale branches from your winget-pkgs fork where the pull request has been merged or closed. Also available as komac clean."
+---
+
+`komac cleanup` finds branches on your fork of `microsoft/winget-pkgs` that were used to submit pull requests that have since been merged or closed. It then prompts you to select which branches to delete. Over time, submitted manifests accumulate many stale branches on your fork; this command lets you clear them out in one step. The command is also available as `komac clean`.
+
+## Usage
+
+```bash
+komac cleanup [OPTIONS]
+```
+
+**Visible alias:** `clean`
+
+## Parameters
+
+<ParamField path="--only-merged" type="boolean">
+  Restrict the list to branches associated with **merged** pull requests only. Cannot be combined with `--only-closed`.
+</ParamField>
+
+<ParamField path="--only-closed" type="boolean">
+  Restrict the list to branches associated with **closed (not merged)** pull requests only. Cannot be combined with `--only-merged`.
+</ParamField>
+
+<ParamField path="--all" type="boolean">
+  Short: `-a`. Delete all eligible branches without showing a multi-select prompt. Also triggered when the `CI` environment variable is set to any truthy value (e.g. in GitHub Actions).
+</ParamField>
+
+<ParamField path="--token" type="string">
+  Short: `-t`. A GitHub classic personal access token with the `public_repo` scope. Also readable from the `GITHUB_TOKEN` environment variable.
+</ParamField>
+
+## Environment variables
+
+| Variable       | Equivalent flag |
+|----------------|-----------------|
+| `GITHUB_TOKEN` | `--token`       |
+| `CI`           | `--all`         |
+
+## Interactive behavior
+
+When you run `komac cleanup` without `--all`, Komac presents a multi-select prompt listing every eligible branch. All branches are selected by default. Use the arrow keys to navigate, **Space** to toggle selection, and **Enter** to confirm. Pressing **Enter** without changing the selection deletes all listed branches.
+
+If no eligible branches are found, Komac exits with a message and makes no changes.
+
+## Examples
+
+### Interactive cleanup (merged and closed)
+
+```bash
+komac cleanup
+```
+
+### Delete only merged branches interactively
+
+```bash
+komac cleanup --only-merged
+```
+
+### Non-interactive: delete all merged and closed branches
+
+```bash
+komac cleanup --all --token "$GITHUB_TOKEN"
+```
+
+### Non-interactive in CI
+
+Setting `CI=true` (as GitHub Actions does automatically) enables non-interactive mode:
+
+```bash
+# In a GitHub Actions workflow, CI=true is already set
+komac cleanup --token "$GITHUB_TOKEN"
+```
+
+<Tip>
+  Run `komac cleanup` periodically to keep your fork tidy. Each manifest submission creates a new branch on your fork, so forks that are used heavily can accumulate dozens of stale branches.
+</Tip>
